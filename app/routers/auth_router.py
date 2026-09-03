@@ -1,12 +1,14 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserLogin
 from app.services.auth_service import auth_service
+
 
 router = APIRouter(
     prefix="/api/v1/auth",
     tags=["Authentication"]
 )
+
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate):
@@ -16,5 +18,17 @@ async def register(user_data: UserCreate):
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        )
+
+
+@router.post("/login")
+async def login(user_data: UserLogin):
+    try:
+        return await auth_service.login_user(user_data)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e)
         )
