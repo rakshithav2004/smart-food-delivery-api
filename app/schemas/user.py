@@ -4,7 +4,6 @@ class UserCreate(BaseModel):
     name: str = Field(min_length=2, max_length=50)
     email: EmailStr
     password: str = Field(min_length=6, max_length=100)
-    role: str = "CUSTOMER"
 
 class UserLogin(BaseModel):
     email: EmailStr

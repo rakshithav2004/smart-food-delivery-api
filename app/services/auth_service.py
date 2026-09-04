@@ -21,7 +21,7 @@ class AuthService:
             "name": user_data.name,
             "email": user_data.email,
             "password": hashed_password,
-            "role": user_data.role
+            "role": "CUSTOMER"
         }
 
         # Save user to MongoDB
@@ -32,7 +32,7 @@ class AuthService:
             "id": str(user_id),
             "name": user_data.name,
             "email": user_data.email,
-            "role": user_data.role
+            "role": "CUSTOMER"
         }
 
     async def login_user(self, user_data):
