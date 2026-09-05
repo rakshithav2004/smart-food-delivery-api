@@ -1,6 +1,9 @@
 from pwdlib import PasswordHash
 from app.repositories.user_repository import user_repository
 from app.core.security import create_access_token
+from bson import ObjectId
+
+from app.schemas import user
 
 password_hash = PasswordHash.recommended()
 
@@ -62,5 +65,27 @@ class AuthService:
             "token_type": "bearer"
         }
 
+    async def update_user_role(self, user_id: str, role: str):
+
+        user = await user_repository.find_by_id(
+        ObjectId(user_id)
+        )
+
+        if not user:
+            raise ValueError("User not found")
+
+        updated = await user_repository.update_role(
+            ObjectId(user_id),
+            role
+        )
+
+        if updated == 0:
+            raise ValueError("Role was not updated")
+
+        return {
+            "message": "User role updated successfully",
+            "user_id": user_id,
+            "role": role
+        }
 
 auth_service = AuthService()
