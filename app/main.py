@@ -3,12 +3,14 @@ from app.config.database import client
 from app.routers.auth_router import router as auth_router
 from app.routers.user_router import router as user_router
 from app.routers.restaurant_router import router as restaurant_router
+from app.routers.menu_router import router as menu_router
 
 app = FastAPI(title="Smart Food Delivery API")
 
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(restaurant_router)
+app.include_router(menu_router)
 
 @app.get("/health")
 async def health_check():
