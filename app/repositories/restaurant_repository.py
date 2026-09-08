@@ -35,4 +35,34 @@ class RestaurantRepository:
 
         return result.deleted_count
 
+    async def search(
+        self,
+        name: str | None = None,
+        cuisine: str | None = None,
+        is_active: bool | None = None
+    ):
+        query = {}
+
+        if name:
+            query["name"] = {
+                "$regex": name,
+                "$options": "i"
+            }
+
+        if cuisine:
+            query["cuisine"] = {
+                "$regex": cuisine,
+                "$options": "i"
+            }
+
+        if is_active is not None:
+            query["is_active"] = is_active
+
+        restaurants = []
+
+        async for restaurant in db.restaurants.find(query):
+            restaurants.append(restaurant)
+
+        return restaurants    
+
 restaurant_repository = RestaurantRepository()

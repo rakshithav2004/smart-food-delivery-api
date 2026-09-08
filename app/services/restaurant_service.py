@@ -145,4 +145,29 @@ class RestaurantService:
             "restaurant_id": restaurant_id
         }
 
+    async def search_restaurants(
+        self,
+        name: str | None = None,
+        cuisine: str | None = None,
+        is_active: bool | None = None
+    ):
+        restaurants = await restaurant_repository.search(
+            name=name,
+            cuisine=cuisine,
+            is_active=is_active
+        )
+
+        return [
+            {
+                "id": str(restaurant["_id"]),
+                "name": restaurant["name"],
+                "description": restaurant.get("description"),
+                "address": restaurant["address"],
+                "cuisine": restaurant["cuisine"],
+                "owner_id": restaurant["owner_id"],
+                "is_active": restaurant["is_active"]
+            }
+            for restaurant in restaurants
+        ]
+
 restaurant_service = RestaurantService()

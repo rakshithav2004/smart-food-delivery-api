@@ -13,6 +13,17 @@ router = APIRouter(
     tags=["Restaurants"]
 )
 
+@router.get("/search")
+async def search_restaurants(
+    name: str | None = None,
+    cuisine: str | None = None,
+    is_active: bool | None = None
+):
+    return await restaurant_service.search_restaurants(
+        name=name,
+        cuisine=cuisine,
+        is_active=is_active
+    )
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_restaurant(
