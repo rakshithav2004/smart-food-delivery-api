@@ -11,6 +11,23 @@ router = APIRouter(
     tags=["Menu"]
 )
 
+@router.get("/search")
+async def search_menu_items(
+    restaurant_id: str | None = None,
+    name: str | None = None,
+    category: str | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    is_available: bool | None = None
+):
+    return await menu_service.search_menu_items(
+        restaurant_id=restaurant_id,
+        name=name,
+        category=category,
+        min_price=min_price,
+        max_price=max_price,
+        is_available=is_available
+    )
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_menu_item(

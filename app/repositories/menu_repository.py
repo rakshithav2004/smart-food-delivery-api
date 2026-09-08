@@ -22,5 +22,50 @@ class MenuRepository:
 
         return items
 
+    async def search(
+        self,
+        restaurant_id: str | None = None,
+        name: str | None = None,
+        category: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        is_available: bool | None = None
+    ):
+        query = {}
+
+        if restaurant_id:
+            query["restaurant_id"] = restaurant_id
+
+        if name:
+            query["name"] = {
+                "$regex": name,
+                "$options": "i"
+            }
+
+        if category:
+            query["category"] = {
+                "$regex": category,
+                "$options": "i"
+            }
+
+        if min_price is not None or max_price is not None:
+            query["price"] = {}
+
+            if min_price is not None:
+                query["price"]["$gte"] = min_price
+
+            if max_price is not None:
+                query["price"]["$lte"] = max_price
+
+        if is_available is not None:
+            query["is_available"] = is_available
+
+        items = []
+
+        async for item in db.menu_items.find(query):
+            items.append(item)
+
+        return items
+
 
 menu_repository = MenuRepository()

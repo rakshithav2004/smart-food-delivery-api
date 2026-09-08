@@ -175,5 +175,36 @@ class MenuService:
             "menu_id": menu_id
         }
 
+    async def search_menu_items(
+        self,
+        restaurant_id: str | None = None,
+        name: str | None = None,
+        category: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        is_available: bool | None = None
+    ):
+        items = await menu_repository.search(
+            restaurant_id=restaurant_id,
+            name=name,
+            category=category,
+            min_price=min_price,
+            max_price=max_price,
+            is_available=is_available
+        )
+
+        return [
+            {
+                "id": str(item["_id"]),
+                "restaurant_id": item["restaurant_id"],
+                "name": item["name"],
+                "description": item.get("description"),
+                "price": item["price"],
+                "category": item["category"],
+                "is_available": item["is_available"]
+            }
+            for item in items
+        ]
+
 
 menu_service = MenuService()
