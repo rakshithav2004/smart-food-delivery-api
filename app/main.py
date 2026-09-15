@@ -7,6 +7,7 @@ from app.routers.menu_router import router as menu_router
 from app.routers.cart_router import router as cart_router
 from app.routers.order_router import router as order_router
 from app.routers.delivery_router import router as delivery_router
+from app.routers.payment_router import router as payment_router
 
 app = FastAPI(title="Smart Food Delivery API")
 
@@ -17,6 +18,7 @@ app.include_router(menu_router)
 app.include_router(cart_router)
 app.include_router(order_router)
 app.include_router(delivery_router)
+app.include_router(payment_router)
 
 @app.get("/health")
 async def health_check():
