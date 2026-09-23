@@ -5,6 +5,7 @@ from bson import ObjectId
 
 from app.repositories.payment_repository import payment_repository
 from app.repositories.order_repository import order_repository
+from app.tasks.payment_tasks import process_payment_notification
 
 
 class PaymentService:
@@ -183,6 +184,7 @@ class PaymentService:
                 f"from {current_status} to {new_status}"
             )
 
+        # Update payment status
         await payment_repository.update(
             object_id,
             {
@@ -191,6 +193,13 @@ class PaymentService:
             }
         )
 
+        # Send background payment notification
+        process_payment_notification.delay(
+            payment_id=payment_id,
+            status=new_status
+        )
+
+        # Get updated payment
         updated_payment = (
             await payment_repository.find_by_id(
                 object_id
@@ -220,12 +229,19 @@ class PaymentService:
                 "Only successful payments can be refunded"
             )
 
+        # Update payment to REFUNDED
         await payment_repository.update(
             object_id,
             {
                 "status": "REFUNDED",
                 "updated_at": datetime.now(timezone.utc)
             }
+        )
+
+        # Send background refund notification
+        process_payment_notification.delay(
+            payment_id=payment_id,
+            status="REFUNDED"
         )
 
         return {
