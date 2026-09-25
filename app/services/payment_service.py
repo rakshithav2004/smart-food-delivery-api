@@ -262,5 +262,4 @@ class PaymentService:
             "updated_at": payment["updated_at"]
         }
 
-
 payment_service = PaymentService()
