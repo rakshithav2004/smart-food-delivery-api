@@ -1,10 +1,6 @@
 from datetime import datetime, timezone
-from bson import ObjectId
 
-from app.tasks.notification_tasks import (
-    send_order_notification,
-    send_order_status_notification
-)
+from bson import ObjectId
 
 from app.repositories.order_repository import order_repository
 from app.repositories.cart_repository import cart_repository
@@ -65,13 +61,7 @@ class OrderService:
         # 6. Clear customer's cart
         await cart_repository.delete(user_id)
 
-        # 7. Send background notification
-        send_order_notification.delay(
-            order_id=str(order_id),
-            message="Your order has been placed successfully."
-        )
-
-        # 8. Return created order
+        # 7. Return created order
         return {
             "id": str(order_id),
             "user_id": user_id,
@@ -175,7 +165,7 @@ class OrderService:
                 "Cancelled order cannot be updated"
             )
 
-        # Allowed order status transitions
+        # Customer/restaurant workflow validation
         allowed_transitions = {
             "PLACED": {
                 "CONFIRMED",
@@ -205,19 +195,11 @@ class OrderService:
                 f"from {current_status} to {new_status}"
             )
 
-        # Update order status in MongoDB
         await order_repository.update_status(
             object_id,
             new_status
         )
 
-        # Send background notification
-        send_order_status_notification.delay(
-            order_id=order_id,
-            status=new_status
-        )
-
-        # Get updated order
         updated_order = await order_repository.find_by_id(
             object_id
         )
@@ -257,12 +239,6 @@ class OrderService:
         await order_repository.update_status(
             object_id,
             "CANCELLED"
-        )
-
-        # Send background notification for cancellation
-        send_order_status_notification.delay(
-            order_id=order_id,
-            status="CANCELLED"
         )
 
         return {
