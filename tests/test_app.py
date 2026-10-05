@@ -1,5 +1,8 @@
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
+import app.main as main
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -21,3 +24,17 @@ def test_health_check():
     assert response.status_code == 200
     assert response.json()["status"] == "UP"
     assert response.json()["database"] == "MongoDB connected"
+
+def test_health_check_database_failure(monkeypatch):
+    mock_client = SimpleNamespace(
+        admin=SimpleNamespace(
+            command=AsyncMock(side_effect=Exception("Database unavailable"))
+        )
+    )
+
+    monkeypatch.setattr(main, "client", mock_client)
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "DOWN"
+    assert response.json()["database"] == "MongoDB connection failed"
+    assert response.json()["error"] == "Database unavailable"
