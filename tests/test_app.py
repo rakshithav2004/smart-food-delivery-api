@@ -210,3 +210,49 @@ async def test_login_wrong_password():
     finally:
         user_repository_module.db = original_db
         await test_client.close()
+
+@pytest.mark.asyncio
+async def test_register_duplicate_email():
+    from pymongo import AsyncMongoClient
+    from app.config.settings import settings
+    import app.repositories.user_repository as user_repository_module
+
+    test_client = AsyncMongoClient(settings.mongo_uri)
+    test_db = test_client[settings.database_name]
+
+    original_db = user_repository_module.db
+    user_repository_module.db = test_db
+
+    user_data = {
+        "name": "Duplicate Test User",
+        "email": "pytest_duplicate@example.com",
+        "password": "Test@123456"
+    }
+
+    try:
+        await test_db.users.delete_one({
+            "email": user_data["email"]
+        })
+
+        transport = ASGITransport(app=app)
+
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test"
+        ) as client:
+            first_response = await client.post(
+                "/api/v1/auth/register",
+                json=user_data
+            )
+
+            second_response = await client.post(
+                "/api/v1/auth/register",
+                json=user_data
+            )
+
+        assert first_response.status_code == 201
+        assert second_response.status_code == 409
+
+    finally:
+        user_repository_module.db = original_db
+        await test_client.close()
