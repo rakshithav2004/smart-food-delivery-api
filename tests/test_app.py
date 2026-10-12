@@ -256,3 +256,32 @@ async def test_register_duplicate_email():
     finally:
         user_repository_module.db = original_db
         await test_client.close()
+
+
+@pytest.mark.asyncio
+async def test_global_exception_handler():
+    from fastapi import APIRouter
+
+    test_router = APIRouter()
+
+    @test_router.get("/test-unexpected-error")
+    async def trigger_unexpected_error():
+        raise RuntimeError("Sensitive internal details")
+
+    app.include_router(test_router)
+
+    transport = ASGITransport(
+        app=app,
+        raise_app_exceptions=False
+    )
+
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test"
+    ) as client:
+        response = await client.get("/test-unexpected-error")
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "detail": "Internal server error"
+    }
