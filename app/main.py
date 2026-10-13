@@ -1,10 +1,11 @@
-
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.config.database import client
+from app.config.database import client, create_indexes
+
 from app.routers.auth_router import router as auth_router
 from app.routers.user_router import router as user_router
 from app.routers.restaurant_router import router as restaurant_router
@@ -21,8 +22,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+# Create MongoDB indexes when FastAPI starts
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_indexes()
+    logger.info("MongoDB indexes created successfully")
+    yield
+
+
 # Create FastAPI application
-app = FastAPI(title="Smart Food Delivery API")
+app = FastAPI(
+    title="Smart Food Delivery API",
+    lifespan=lifespan
+)
 
 
 # Global handler for unexpected errors
